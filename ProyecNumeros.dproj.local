@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2022/04/10 18:08:46.000.241,=D:\Proyectos delphi\Unit1.pas</Transaction>
+    <Transaction>2022/09/14 13:23:19.000.413,=D:\Proyectos delphi\Unit1.pas</Transaction>
+    <Transaction>2022/09/14 22:36:57.000.333,=D:\Proyectos delphi\Unit1.pas</Transaction>
+    <Transaction>2022/09/14 22:37:33.000.027,D:\Proyectos delphi\Unit1.pas=D:\Universidad\Clases\Programacion 1\Clase Numeros\FormNumeros.pas</Transaction>
+    <Transaction>2022/09/14 22:37:33.000.027,D:\Proyectos delphi\Unit1.dfm=D:\Universidad\Clases\Programacion 1\Clase Numeros\FormNumeros.dfm</Transaction>
+    <Transaction>2022/09/14 22:37:53.000.830,D:\Proyectos delphi\Project1.dproj=D:\Universidad\Clases\Programacion 1\Clase Numeros\ProyecNumeros.dproj</Transaction>
+    <Transaction>2022/09/14 22:38:04.000.381,=D:\Universidad\Clases\Programacion 1\Clase Numeros\Unit1.pas</Transaction>
+    <Transaction>2022/09/14 22:38:33.000.773,D:\Universidad\Clases\Programacion 1\Clase Numeros\Unit1.pas=D:\Universidad\Clases\Programacion 1\Clase Numeros\Numeros.pas</Transaction>
+    <Transaction>2022/10/01 23:50:29.000.431,=D:\Universidad\Clases\Programacion 1\Clase Numeros\Unit1.pas</Transaction>
+    <Transaction>2022/10/02 00:23:55.000.781,D:\Universidad\Clases\Programacion 1\Clase Numeros\Unit1.pas=D:\Universidad\Clases\Programacion 1\Clase Numeros\UCcadenas.pas</Transaction>
+  </Transactions>
+</BorlandProject>

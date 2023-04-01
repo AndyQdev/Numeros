@@ -1,0 +1,684 @@
+unit Numeros;
+
+interface
+uses math,SysUtils;
+Type
+ Numero = class
+  private
+   valor: cardinal;
+  public
+    Function CountDigit:byte;
+    Function GetValor: Cardinal;
+    Function PosPares: cardinal; //Devuelve posiciones pares de un numero
+    Function NmroDentroDeOtro( Numero: cardinal): boolean;
+    Function ConvertirRomano: string;
+    Function ConvertirLiteral(valorD:integer): string;
+    Function EliminarO(s:string):string;
+    Function DigitMenor:byte;
+    Procedure SetValor(NuevoValor:cardinal);
+    Procedure DelDigito(p:byte);
+    procedure DelCeroPares; //Elimina los ceros antes y despues de un nro par
+    procedure DisminuirDigito(var p:cardinal); //disminuye un numero a cada digito
+    Procedure AdicionarDigito(var numero: cardinal; digito:byte);
+    Procedure ModificarDigito(D,P:byte);
+    Procedure InsertarDigito(D,P:byte);
+    procedure ModificarDigito2(var Numero: cardinal; D, P: byte);
+    Procedure OrdenarAdentroAfuera;
+    Procedure ELiminNumeroRepetido(n: cardinal);
+    Procedure EliminarNumeroRepMenos1(n: cardinal);
+    Procedure OrdenarImparesPares;
+    Procedure Eliminar0deDigitoPrimo;
+    Procedure EliminDigitoMayorPrimo;
+    Procedure ELiminDigitoRepetido(n: byte);
+    procedure OrdenAscendente;
+    Procedure DelDigitMasRepMenos1; //Elimina los dos digitos mas repetidos dejando 1
+    procedure DelDigitMenos1(d: byte);
+    procedure InvertirNum;
+    Function SumaDigit(Num: cardinal): byte;
+    Function SacarDigit(var Num: cardinal; p: byte): byte;
+    Function CombSumaDigito(k: byte): cardinal; //Devuelve la combinacion de numeros que den la suma para k
+    Function EsPrimo(num: cardinal): boolean;
+    Function EncontrarNumMenor: cardinal;
+    Function EncontrarNumMenor2: cardinal;
+    Function digitMasRepetido: byte;
+    Function CountDigitRepetido(digit: byte): byte;
+    Function CalcularFecha: string;
+    Function Esprimo2(n: byte): boolean;
+    function ConvertirABaseN(baseN:byte):string;
+    function Realaentero(x:real):integer;
+
+end;
+
+implementation
+
+{ Numero }
+
+procedure Numero.ModificarDigito2(var Numero: cardinal; D, P: byte);
+var
+   F,n: cardinal;
+begin
+ if (P>0)and (p<=Trunc(Log10(Numero))+1) then
+ Begin
+    F:=Trunc(power(10,P-1));
+    n:=numero mod F; numero:= (numero Div F)div 10;
+    AdicionarDigito(numero, D); numero:=numero*F+n;
+ End
+ Else raise Exception.Create('Posicion Invalida');
+end;
+
+
+procedure Numero.AdicionarDigito(var numero: cardinal; digito: byte);
+begin
+ if (digito>=0) and (digito<=9) then
+ Begin
+    numero:= (numero*10)+digito;
+ End
+ Else raise Exception.Create('Rango incompatible del digito')
+end;
+
+procedure Numero.InsertarDigito(D, P: byte);
+var
+   n,F:cardinal;
+begin
+ if (P>0)then
+ Begin
+    F:= Trunc(Power(10,p-1));
+    n:= Valor mod F; valor:= (valor div f);
+    AdicionarDigito(valor,D); valor:= (valor * F)+n;
+ End;
+end;
+
+procedure Numero.InvertirNum;
+var
+   i, n, digit: byte;
+begin
+ i:= 1;  n:= countDigit;
+ while i<n do begin
+    digit:= (valor div Trunc(power(10, n-1))) mod 10;
+    modificarDigito((valor div Trunc(power(10,i))) mod 10, n);
+    modificarDigito(digit, i); inc(i); dec(n);
+ end;
+end;
+
+function Numero.CalcularFecha: string;
+var auxi, años, meses, dias: word;
+begin
+ años:= 2000; meses:= 00; dias:= 01;
+ //años:= (valor div 365)+ años;
+ //meses:= (valor mod 365)div 30 + meses;
+ //dias:= (valor mod 365) mod 30 + dias;
+ result:= inTtostr(((valor mod 365) mod 30) + dias)+'/'+intTostr(((valor mod 365) div 30) + meses)+'/'+IntTostr((valor div 365)+ años);
+end;
+
+function Numero.CombSumaDigito(k: byte): cardinal;
+var
+   varAux, base, suma, resultado: cardinal;
+   digit, p, i: byte;
+   salir1, salir2: boolean;
+begin
+ varAux:= valor; p:=1; salir1:=true; salir2:=true; resultado:= 0;
+ while (p<=Trunc(Log10(valor)+1))and (salir1) and (sumaDigit(valor)>=k) and (k<>0) do
+ Begin
+   base:= 10; i:=1;
+    while (i<= Trunc(Log10(varAux))) and salir2 do
+    Begin
+       digit:= sacarDigit(varAux,p);
+         while varAux>0 do
+         Begin
+            suma:= (varAux mod base)*10 + digit;
+            if SumaDigit(suma)=k then begin
+               resultado:= suma;
+               salir1:= false; salir2:= false; break
+            end;
+            varAux:= varAux div 10;
+         End;
+      inc(i); base:= Trunc(power(10,i)); varAux:=Valor;
+    End;
+  inc(p);
+ End;
+ result:= resultado;
+end;
+
+function Numero.ConvertirABaseN(baseN: byte): string;
+Const Dig = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var d:byte;  n,p:string;
+    aux:cardinal;
+begin
+  aux:=valor; n:='';
+while aux>0 do
+ begin
+   d:= aux mod baseN;
+   n:= Dig[d+1]+n;
+   aux := aux div baseN
+ end;
+ result:=n;
+end;
+
+
+function Numero.ConvertirLiteral(valorD: integer): string;
+const
+unidad: array[0..19] of string =('','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciseis','diecisiete','dieciocho','diecinueve');
+decena: array[1..9] of string = ('diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa');
+centena: array[1..9]of string =('ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos');
+var Literal:string;
+begin
+ if valorD<20 then
+    Literal:= unidad[valorD]
+ else if (valorD mod 10=0)and (valorD<100) then
+    literal:= decena[valorD div 10]
+ else if (valorD div 10 = 2) then
+    Literal:= 'veinti'+unidad[valorD mod 10]
+ else if valorD<100 then
+    literal:= decena[valorD div 10]+' y '+unidad[valorD mod 10]
+ else if (valorD div 100=1)and(valorD mod 100=0) then
+    literal:= 'cien'
+ else if valorD<1000 then
+    literal:= centena[valorD div 100]+' '+convertirLiteral(ValorD mod 100)
+ else if ValorD<2000 then
+    literal:='mil '+convertirLiteral(ValorD mod 1000)
+ else if valorD<1000000 then
+    literal:= EliminarO(ConvertirLiteral(ValorD div 1000))+' mil '+ConvertirLiteral(ValorD mod 1000)
+ else if ValorD<1000000000 then
+    literal:= EliminarO(ConvertirLiteral(ValorD div 1000000))+' millones '+ConvertirLiteral(Valord mod 1000000);
+ result:= literal;
+end;
+
+Function Numero.ConvertirRomano:string;
+const digitRomano: array[1..4,0..9] of string =
+(('','I','II','III','IV','V','VI','VII','VIII','IX'),
+('','X','XX','XXX','XL','L','LX','LXX','LXXX','XC'),
+('','C','CC','CCC','CD','D','DC','DCC','DCCC','CM'),
+('','M','MM','MMM','iv','v','vi','vii','viii','ix'));
+var Romano:string; i,digit: byte; varauxi: cardinal;
+begin
+ varAuxi:= valor;
+ i:=1;
+ romano:='';
+  while varAuxi>0 do
+  Begin
+    digit:= varAuxi mod 10;
+    romano:= digitRomano[i,digit]+romano;
+    i:= i+1;
+    varAuxi:= varAuxi div 10;
+  End;
+ result:= Romano;
+end;
+
+function Numero.CountDigit: byte;
+begin
+ result:= Trunc(log10(valor))+1;
+end;
+
+function Numero.CountDigitRepetido(digit: byte): byte;
+var i,c: byte;
+begin
+ c:=0;
+ for i := 1 to countDigit do
+     if (valor div Trunc(power(10,i-1)))mod 10 = digit then
+        inc(c);
+ result:=c;
+end;
+
+procedure Numero.DelCeroPares;
+var
+   a,d,p:cardinal;
+   px:byte;
+   ba,bd:boolean;
+begin
+ p:=PosPares;
+ px:=p mod 10;
+  while p>0 do
+  Begin
+      if (px<>1) then
+        a:= Trunc(Power(10,px-2));
+      d:= Trunc(Power(10,px));
+      if (((valor div a)mod 10)=0)and(px<>1)then
+      Begin
+          DelDigito(px-1);
+          DisminuirDigito(p);
+          d:=d div 10; px:=px-1; ba:=true;
+      End else begin
+          ba:=false;
+      end;
+      if (((valor div d)mod 10)=0)and (px<>CountDigit) then
+      Begin
+         DelDigito(px+1);
+         DisminuirDigito(p); bd:=true;
+      End else begin
+         bd:=false;
+      end;
+      if (ba or bd)=false then begin
+         p:= p div 10; px:=p mod 10;
+      end;
+  End;
+end;
+
+procedure Numero.DelDigitMasRepMenos1;
+var
+   i,d : byte;
+begin
+ i:= 2;
+ while i>0 do begin
+    d:= digitMasRepetido;
+    DelDigitMenos1(d);
+    dec(i);
+ end;
+end;
+
+procedure Numero.DelDigitMenos1(d: byte);
+var
+   i,p: byte;
+begin
+ i:=1;
+ while i<=countDigit do
+     if (valor div trunc(power(10, i-1)))mod 10 = d then begin
+        delDigito(i); p:=i;
+     end else begin
+        inc(i);
+     end;
+ insertardigito(d,p);
+end;
+
+procedure Numero.DelDigito(p: byte);
+var F:cardinal;
+begin
+ if (p>0) and (p<=CountDigit) then
+ begin
+    F:=Trunc(power(10,p-1));
+    valor:= ((valor div F) div 10) * F + (valor mod F)
+ End
+ Else raise Exception.Create('Error Posicion invalida');
+end;
+
+function Numero.digitMasRepetido: byte;
+var aux: cardinal;
+    d, new, digit: byte;
+begin
+ aux:= valor; new:= 0;
+ while aux>0 do begin
+    d:= CountDigitRepetido(aux mod 10);
+     if d > new then begin
+        new:= d; digit:= aux mod 10;
+     end;
+    aux:= aux div 10;
+ end;
+ result:= digit;
+end;
+
+function Numero.DigitMenor: byte; //Devuelve la posicion y el digito menor
+var
+   varAux: cardinal;
+   digit, newDigit,c,p: byte;
+begin
+ varAux:= valor;
+ c:=1;
+ newDigit:=11;
+ while (varAux>0)and(newDigit<>0) do
+ Begin
+   digit:= varAux mod 10;
+       if digit<newDigit then begin
+          newdigit:= digit; p:=c;
+       end;
+   varAux:= VarAux div 10;
+   c:=c+1;
+ End;
+ result:= p*10+newDigit; //div 10 para la posicion y mod 10 para el digito
+end;
+
+procedure Numero.DisminuirDigito(var p: cardinal);
+var c,k:cardinal;
+    px:byte;
+begin
+ c:=0;
+ k:=1;
+  while p>0 do
+  Begin
+   px:= (p mod 10);
+   if px<>0 then begin
+    px:=px-1;
+    c:=px*k+c;
+    k:=k*10;
+   end else begin
+    k:=k*10;
+   end;
+   p:= p div 10;
+  End;
+ p:=c;
+end;
+
+procedure Numero.Eliminar0deDigitoPrimo;
+var 
+   posicion, iniciador, Terminador: byte;
+   potencia: cardinal;   
+begin
+ posicion:= 1; iniciador:= 1; Terminador:=1;
+ while Posicion<= Trunc(Log10(valor)+1) do
+ Begin
+   potencia:= Trunc(power(10, posicion-1));
+     if EsPrimo((valor div potencia) mod 10) and
+     (((valor div ((potencia*10)div Terminador)mod 10)=0)or((valor div(( potencia div 10)+iniciador) mod 10)=0))
+     then Begin
+        if posicion<>Trunc(Log10(valor)+1) then        
+            if ((valor div (potencia*10)mod 10)=0) then
+                DelDigito(posicion+1);
+        if(posicion<>1) then
+            if ((valor div( potencia div 10) mod 10)=0) then Begin
+                DelDigito(Posicion-1); posicion:= posicion -1; 
+            End;
+     End else begin
+        inc(posicion); iniciador:=0;
+        if posicion=Trunc(Log10(valor)+1) then 
+           Terminador:= 10;
+     end;
+ End;
+end;
+
+procedure Numero.EliminarNumeroRepMenos1(n: cardinal);
+var
+   residuo, num, base, varAux: cardinal;
+   expo, exponente: byte;
+begin
+ varAux:= valor;
+ expo:= Trunc(Log10(n)+1);
+ base:= Trunc(power(10, expo));
+ while varAux>0 do
+ Begin
+   num:= varAux mod base;
+    if num = n then begin
+       base:= Trunc(Power(10,expo));
+       residuo:= Valor mod base; valor:= Valor div base;
+       EliminNumeroRepetido(n); valor:= (valor* base)+ residuo;
+       break;
+    end;
+   varAux:= varAux div 10;
+   expo:= expo +1;
+ End;
+end;
+
+Function Numero.EliminarO(s: string):string;
+var
+   l:byte;
+begin
+ l:= length(s);
+  if (s[l]='o')and(s[l-1]='n') then
+     delete(s,l,1);
+ result:=s;
+end;
+
+procedure Numero.EliminDigitoMayorPrimo;
+var
+   varAux: cardinal;
+   newDigit, digit: byte;
+begin
+ newDigit:= 0; varAux:= valor;
+  while VarAux>0 do
+  Begin
+    digit:= varAux mod 10;
+      if EsPrimo(Digit) and (digit > newdigit) then
+         newDigit:= Digit;
+    varAux:= VarAux div 10;
+  End;
+ eliminDigitoRepetido(newDigit);
+end;
+
+procedure Numero.ELiminDigitoRepetido(n: byte);
+var
+   p: byte; base: cardinal;
+begin
+ p:= 1;
+ while p <= CountDIgit do
+ Begin
+  base:= Trunc(Power(10,p-1));
+   if (Valor div base) mod 10 = n then begin
+      Deldigito(p); p:= p-1;
+   end;
+  inc(p);
+ End;
+end;
+
+procedure Numero.ELiminNumeroRepetido(n: cardinal);
+var
+   resultado, k, num, base, varAux: cardinal;
+   expo: byte;
+begin
+ resultado:= 0; k:=1; varAux:= valor;
+ expo:= Trunc(Log10(n)+1);
+ base:= Trunc(power(10, expo));
+ while varAux>0 do
+ Begin
+   num:= varAux mod base;
+    if num = n then begin
+       varAux:= VarAux div base;
+    end else begin
+       resultado:= ((varAux mod 10)*k) +resultado;
+       varAux:= varAux div 10; k:= k*10;
+    end;
+ End;
+ valor:= resultado;
+end;
+
+function Numero.EncontrarNumMenor: cardinal;
+var
+   digit: cardinal; c: byte;
+begin
+ digit:= digitMenor mod 10; DelDigito(digitMenor div 10); c:= 0;
+ while digit=0 do begin
+       digit:= digitMenor mod 10;
+       DelDigito(digitMenor div 10); inc(c);
+ end;
+ digit:= digit * trunc(Power(10,c));
+ while valor>0 do begin
+       digit:= (digit*10)+(digitMenor mod 10);
+       DelDigito(digitMenor div 10);
+ end;
+ result:= digit;
+end;
+
+function Numero.EncontrarNumMenor2: cardinal;
+var
+   n: byte; num1, num2: cardinal;
+begin
+ ordenAscendente; n:=0;
+ while valor mod 10 = 0 do begin
+       inc(n); valor:= valor div 10;
+ end;
+ num1:= valor mod 10 * trunc(power(10,n));
+ num2:= valor div 10;
+ while num2>0 do begin
+       num1:= (num1 *10)+(num2 mod 10);
+       num2:= num2 div 10;
+ end;
+ result:= num1;
+end;
+
+function Numero.EsPrimo(num: cardinal): boolean;
+var
+    incremento: byte; Primo: boolean; hola: array [1..20] of byte;
+begin
+ primo:= true; incremento:= 2;
+ while (incremento < 10) and (num > incremento) do
+ Begin
+    if num mod incremento = 0 then
+       primo:= false;
+   inc(incremento);
+ End;
+ if num = 0 then
+    primo:= false;
+ result:= primo;
+end;
+
+function Numero.Esprimo2(n: byte): boolean;
+const  primo = [2,3,5,7];
+begin
+   if (n in primo) then
+    begin
+    result:=true;
+    end else result:=false;
+end;
+
+function Numero.GetValor: Cardinal;
+begin
+ result:= Valor;
+end;
+
+procedure Numero.ModificarDigito(D, P: byte);
+var
+   F,n: cardinal;
+begin
+ if (P>0)and (p<=CountDigit) then
+ Begin
+    F:=Trunc(power(10,P-1));
+    n:=valor mod F; Valor:= (Valor Div F)div 10;
+    AdicionarDigito(valor, D); Valor:=Valor*F+n;
+ End
+ Else raise Exception.Create('Posicion Invalida');
+end;
+
+function Numero.NmroDentroDeOtro(Numero:cardinal): boolean;
+var
+   expo: byte;
+   num, base,varAux : cardinal;
+   b: boolean;
+begin
+ varAux:= valor;
+ expo:= Trunc(Log10(Numero))+1;
+ base:= Trunc(Power(10,Expo));
+ b:= false;
+   while varAux>0 do
+   Begin
+     num:= varAux mod base;
+      if num = Numero then
+      Begin
+         b:= true;
+         break;
+      End;
+     varAux:= varAux div 10;
+   end;
+ result:= b;
+end;
+
+procedure Numero.OrdenarAdentroAfuera;
+var
+    ordenar: cardinal;
+    DSig, Dant, Digit: byte;
+    bandera: boolean;
+begin
+ ordenar:= valor;
+ bandera:= true;
+  if countDigit mod 2 = 1 then begin
+     Dant:= (CountDigit div 2)+1; Dsig:= (CountDigit Div 2)+2;
+  end else begin
+     Dsig:= (CountDigit div 2) +1; Dant:= CountDigit div 2;
+  end;
+ while valor>0 do
+ Begin
+   digit:= DigitMenor mod 10;
+   DelDigito(DigitMenor div 10);
+    if Bandera then begin
+       ModificarDigito2(Ordenar,digit,Dant);
+       Dant:=Dant-1; bandera:= not bandera;
+    End else begin
+       ModificarDigito2(Ordenar,digit,Dsig);
+       Dsig:= Dsig+1; bandera:= Not Bandera;
+    end;
+ End;
+ valor:=ordenar;
+end;
+
+procedure Numero.OrdenAscendente;
+var
+   aux, k: cardinal;
+begin
+ k:=1; aux:= 0;
+ while Valor>0 do begin
+       aux:= (DigitMenor mod 10)* k + aux;
+       DelDigito(digitMenor div 10); k:= k *10;
+ end;
+ valor:= aux;
+end;
+
+procedure Numero.OrdenarImparesPares;
+var digit, expo: byte;
+    par, base, impar, k: cardinal;
+begin
+ par:= 0; impar:= 0; k:=1;
+   while Valor>0 do
+   Begin
+      digit:= DigitMenor mod 10;
+        if (digit mod 2= 0) and (digit<>0) then
+           par:= (par*10)+digit
+        else if (digit mod 2= 1) and (digit<>0) then
+           impar:= (impar*10)+digit
+        else if Digit=0 then
+           k:= k*10;
+      DelDigito(digitMenor div 10);
+   End;
+ expo:= Trunc(log10(par)+1); base:= Trunc(Power(10,expo));
+ valor:= ((impar * k)* base)+ par;
+end;
+
+function Numero.PosPares: cardinal;
+var
+    c,dx:byte;
+    n,k,r:cardinal;
+begin
+ n:=valor; c:=1; k:=1; r:=0;
+  while n>0 do
+  Begin
+    dx:= n mod 10;
+    n:= n div 10;
+      if ((dx mod 2)= 0) and (dx<>0)then
+      Begin
+         r:= (c*k)+r;
+         k:=k*10;
+      End;
+    c:=c+1;
+  end;
+ result:=r;
+end;
+
+function Numero.Realaentero(x: real): integer;
+var r:real;    y:integer;    c:string;
+begin
+y := trunc(x);
+//r:= floattoInt(y);
+c:='123';
+r:=StrToInt(c);
+result := trunc(x);
+end;
+
+function Numero.SacarDigit(var Num: cardinal; p: byte): byte;
+var
+   base, residuo: cardinal;
+   digito: byte;
+begin
+ if (p>0)and(p<=Trunc(Log10(num)+1)) then
+ begin
+   base:= Trunc(Power(10, p-1));
+   residuo:= Num mod base;
+   Num:= (Num div base); digito:= Num mod 10;
+   Num:= ((Num div 10)* base)+ residuo;
+ end
+ Else raise Exception.Create('posicion invalida');
+ result:= digito;
+end;
+
+procedure Numero.SetValor(NuevoValor: cardinal);
+begin
+ valor:= NuevoValor;
+end;
+
+function Numero.SumaDigit(Num: cardinal): byte;
+var
+   Digit, newDigit: byte;
+begin
+ Digit:=0;
+  while Num>0 do
+  Begin
+    newDigit:= Num mod 10; Digit:= Digit + NewDigit;
+    Num:= Num div 10;
+  End;
+ result:= Digit;
+end;
+
+end.
